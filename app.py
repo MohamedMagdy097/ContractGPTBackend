@@ -22,9 +22,13 @@ from supabase.client import  create_client
 from firebase_admin import firestore
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 
 # Load environment variables from .env file
 load_dotenv()
+app = Flask(__name__)
+
+CORS(app, supports_credentials=True)
 
 # Clarifai settings
 CLARIFAI_PAT = os.getenv("CLARIFAI_PAT")
@@ -34,7 +38,6 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-app = Flask(__name__)
 nlp = spacy.load("en_core_web_sm")
 
 # Set up the Clarifai channel
