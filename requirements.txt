@@ -7,3 +7,4 @@ firebase_admin
 langchaincoexpert
 google-search-results
 configparser
+fpdf2
