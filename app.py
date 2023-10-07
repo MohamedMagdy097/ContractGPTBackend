@@ -145,12 +145,12 @@ def drop():
             signature_request_api = apis.SignatureRequestApi(api_client)
           # Parse JSON data from the request body
             request_data = request.get_json()
-            text_data = request_data.get("text_data", "Default text for PDF")
+            text_data = request_data("chat")
             pdf_file_path = text_to_pdf(text_data)
 
             # Extract signer email addresses from the request data
-            signer_1_email = request_data.get("signer_1_email", "jack@example.com")
-            signer_2_email = request_data.get("signer_2_email", "jill@example.com")
+            signer_1_email = request_data("signer_1_email")
+            signer_2_email = request_data("signer_2_email")
 
             # De
             # Define signers and other options
