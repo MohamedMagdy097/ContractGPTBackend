@@ -20,12 +20,10 @@ from supabase.client import  create_client
 # from dotenv import load_dotenv
 # from firestore import db
 from firebase_admin import firestore
-from dotenv import load_dotenv
 import os
 from flask_cors import CORS
 
 # Load environment variables from .env file
-load_dotenv()
 app = Flask(__name__)
 
 CORS(app, supports_credentials=True)
