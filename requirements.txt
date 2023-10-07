@@ -10,3 +10,4 @@ configparser
 fpdf2
 flask_cors
 dropbox_sign
+dotenv
