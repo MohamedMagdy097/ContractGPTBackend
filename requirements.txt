@@ -4,6 +4,6 @@ clarifai==9.7.5
 transformers==4.32.0
 supabase
 firebase_admin
-langchaincoexpertn==0.0.292
+langchaincoexpert
 google-search-results
 configparser
