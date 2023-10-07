@@ -6,6 +6,8 @@ from langchaincoexpert.llms import Clarifai
 # import csv
 import spacy
 from pprint import pprint
+from fpdf import FPDF
+
 from dropbox_sign import \
     ApiClient, ApiException, Configuration, apis, models
 
@@ -107,7 +109,14 @@ AI:"""
     # response = ans
     return ans
 
-
+def text_to_pdf(text):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(190, 10, txt=text, align="L")
+    pdf_file_path = "output.pdf"
+    pdf.output(pdf_file_path)
+    return pdf_file_path
 
 @app.route('/delete', methods=['DELETE'])
 def deleteChat():
@@ -136,7 +145,9 @@ def drop():
             signature_request_api = apis.SignatureRequestApi(api_client)
           # Parse JSON data from the request body
             request_data = request.get_json()
-            
+            text_data = request_data.get("text_data", "Default text for PDF")
+            pdf_file_path = text_to_pdf(text_data)
+
             # Extract signer email addresses from the request data
             signer_1_email = request_data.get("signer_1_email", "jack@example.com")
             signer_2_email = request_data.get("signer_2_email", "jill@example.com")
@@ -176,7 +187,7 @@ def drop():
                     "lawyer1@dropboxsign.com",
                     "lawyer2@dropboxsign.com",
                 ],
-                files=[open("example_signature_request.pdf", "rb")],
+                files=[open(pdf_file_path, "rb")],  # Use the generated PDF
                 metadata={
                     "custom_id": 1234,
                     "custom_text": "NDA #9",
