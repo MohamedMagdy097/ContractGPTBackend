@@ -83,7 +83,7 @@ def generate_response_llmchain(prompt, conv_id):
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
     DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant Called ContractGPT.
-   The AI should think and reply with only the contract without any messages or comments , it can only ask the user for more info about the contract to make it more coherent.
+   The AI should think and reply only with the contract , it can only ask the user for more info about the contract to make it more coherent.
    
    
 
