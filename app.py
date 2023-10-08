@@ -366,7 +366,7 @@ def spell():
 
    
     
-    response = handle_message(input_message, conv_id,internet=False,spell=True)
+    response = handle_message(input_message, conv_id,internet=False,spell=True,assesment=False)
 
 
     return jsonify({'response': response})
