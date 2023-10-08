@@ -20,10 +20,12 @@ from supabase.client import  create_client
 # from dotenv import load_dotenv
 # from firestore import db
 from firebase_admin import firestore
+# from dotenv import load_dotenv
 import os
 from flask_cors import CORS
 
 # Load environment variables from .env file
+# load_dotenv()
 app = Flask(__name__)
 
 CORS(app, supports_credentials=True)
@@ -50,7 +52,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="0e09cdff48e6ce84afcd2e0db9fdd322462246218b58e25e2bcc67d7817a0ebf",
+    username="afcd15c5bb48d8034a8b8c9cad85978200b25f173f4697adce2768faa13b91d9",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
@@ -77,14 +79,13 @@ def generate_response_llmchain(prompt, conv_id):
     convid = "a" + str(conv_id)
     # filter = {"user_id": userid}
     vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase,user_id=conv_id) # here we use normal userid "for saving memory"
-    # If the question isn't contract related or doesn't output a contract reply with 1.
-    
+
     retriever = vectordb.as_retriever(search_kwargs=dict(k=10,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
     DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is a Contract Creation assitant Called ContractGPT.
-   The AI should think and reply only with the contract , it can only ask the user for more info about the contract to make it more coherent.
-   
+   ,The Ai is a Contract Creation assitant designed to make Contracts.
+   If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
+   The AI should usually reply with the contract only without any instructions or explainations.
    
 
 Relevant pieces of previous conversation:
@@ -139,7 +140,10 @@ def deleteChat():
         return jsonify({"message": "Chat deleted successfully"})
     except Exception as e:
         return jsonify({"message": f"Error deleting chat: {str(e)}"}, status_code=500)
-    
+
+
+
+
 @app.route('/drop', methods=['POST'])
 def drop():
         # Initialize Dropbox API client
@@ -156,7 +160,7 @@ def drop():
             title = request_data["title"]
             subject = request_data["subject"]
             message = request_data["message"]
-            cc_email_addresses = request_data["cc"]  # Retrieve cc_email_addresses as specified in the request data
+            cc_email_addresses = request_data["cc_email_addresses"]  # Retrieve cc_email_addresses as specified in the request data
 
         
             # Define signers and other options
@@ -212,6 +216,77 @@ def drop():
                 return jsonify({'error': str(e)}, status_code=500)
 
 
+
+@app.route('/update' , methods = ["POST"] )
+def saveId():
+    data = request.get_json()
+
+
+    google_id = data["google_id"]
+    conv_id = data["conv_id"]
+    response = data["response"]
+
+    data_to_upsert = {
+        "googleid": google_id,
+        "conv_id": conv_id,
+        "response": response
+    }
+    try:
+        # Attempt to upsert the data into the "Con" table
+        supabase.from_("demo").upsert([data_to_upsert]).execute()
+        return jsonify({"message": "Data upserted successfully"})
+    except Exception as e:
+        # Handle the exception and provide an appropriate error response
+        return jsonify({"error": str(e)}), 500  # HTTP 500 Inter
+
+
+
+# @app.route('/get_conversations/<google_id>', methods=["GET"])
+# def getConversations(google_id):
+#     try:
+#         # Fetch data from the "demo" table based on the provided Google ID
+#         query = supabase.from_("demo").select("conv_id, response").eq("googleid", google_id)
+#         response = query.execute()
+
+#         # Check if the response contains data
+#         if "data" in response:
+#             rows = response["data"]
+
+#             # Create a list of conversations (conv_id and Response)
+#             conversations = [{"conv_id": row["conv_id"], "response": row["response"]} for row in rows]
+
+#             return jsonify({"conversations": conversations})
+#         else:
+#             return jsonify({"conversations": []})  # No data found
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500  # HTTP 500 Internal Server Error for failure
+
+@app.route('/get_conversations/<google_id>', methods=["GET"])
+def getConversations(google_id):
+    try:
+        # Fetch data from the "demo" table based on the provided Google ID
+        query = supabase.from_("demo").select("conv_id, response").eq("googleid", google_id)
+        response = query.execute()
+
+        # Check if the response contains data
+        if response.data:
+            rows = response.data
+            print(rows)
+            # Create a dictionary to store conv_id as keys and lists of responses as values
+            conv_id_responses = {}
+            for row in rows:
+                conv_id = row["conv_id"]
+                response = row["response"]
+                if conv_id not in conv_id_responses:
+                    conv_id_responses[conv_id] = []
+                conv_id_responses[conv_id].append(response)
+
+            return jsonify(conv_id_responses)
+    
+        else:
+            return jsonify({})  # No data found, return an empty dictionary
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # HTTP 500 Internal Server Error for failure
 
 @app.route('/chat', methods=['POST'])
 def api():
