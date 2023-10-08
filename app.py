@@ -77,12 +77,14 @@ def generate_response_llmchain(prompt, conv_id):
     convid = "a" + str(conv_id)
     # filter = {"user_id": userid}
     vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase,user_id=conv_id) # here we use normal userid "for saving memory"
-
+    # If the question isn't contract related or doesn't output a contract reply with 1.
+    
     retriever = vectordb.as_retriever(search_kwargs=dict(k=10,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
     DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant designed to make Solid Contracts.
-   The AI should reply with the contract only without any instructions or explainations Only the Contract. If the question isn't contract related or doesn't output a contract reply with 1.
+   The AI should reply with the contract only without any instructions or explainations Only the Contract. The Ai responds with a highlight with bold when user asks for risk assesment
+   
    
 
 Relevant pieces of previous conversation:
