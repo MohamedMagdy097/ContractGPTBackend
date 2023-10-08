@@ -80,13 +80,13 @@ llm = Clarifai(pat=CLARIFAI_PAT, user_id='openai', app_id='chat-completion', mod
 
 
 # Handle incoming messages
-def handle_message(input_text , user_id,internet):
+def handle_message(input_text , user_id,internet,spell,assesment):
     memory_key = {user_id}
     if internet : 
 
         response =  generate_Internet_response_llmchain(input_text, user_id)
     else: 
-        response = generate_response_llmchain(input_text, user_id)
+        response = generate_response_llmchain(input_text, user_id,spell=spell,assessment=assesment)
 
     
     return response
@@ -98,35 +98,18 @@ def generate_Internet_response_llmchain(prompt, conv_id):
 
     retriever = vectordb.as_retriever(search_kwargs=dict(k=15,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory= VectorStoreRetrieverMemory(retriever=retriever , memory_key="chat_history")
-    DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI. The AI is Korean and talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question,
-    The AI is a question optimizer , it optimizes questions asked to be later searched in google to find better answers.
-Relevant pieces of previous conversation:
+    DEFAULT_TEMPLATE = """he following is a friendly conversation between a human and an AI called ContractGPT. 
+   ,The Ai is a Contract Creation assitant designed to make Contracts.
+   If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
+   The AI should usually reply with the contract only without any instructions or explainations.
+   
 {history}
 (You do not need to use these pieces of information if not relevant)
 
 Current conversation:
 Human: {input}
 AI:"""
-    # formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
 
-    # PROMPT = PromptTemplate(
-    # input_variables=["history", "input"], template=DEFAULT_TEMPLATE
-    # )
-
-    
-    # conversation_with_summary = ConversationChain(
-    #     llm=llm,
-    #     prompt=PROMPT,
-    #     memory=memory,
-    #     verbose=True
-    # )
-
-
-#     product_prompt = PromptTemplate(
-#     input_variables=["input"], 
-#     template=" You are a financial advisor and you should give me personalized response :  {input}"
-# )    
- 
   
     agent = initialize_agent(tools, llm, agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION, verbose=True, memory = memory)
     # agent.input_keys= 
@@ -134,17 +117,42 @@ AI:"""
     return final
 
 
-def generate_response_llmchain(prompt, conv_id):
+def generate_response_llmchain(prompt, conv_id,spell,assessment):
     convid = "a" + str(conv_id)
     # filter = {"user_id": userid}
     vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase,user_id=conv_id) # here we use normal userid "for saving memory"
 
     retriever = vectordb.as_retriever(search_kwargs=dict(k=10,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
-    DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
+
+    if spell:
+        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
+   ,The Ai is a Contract Creation assitant designed to make Contracts.
+    The AI Should only check any spelling mistakes and grammer mistakes and return the contract with the spelling and grammer mistakes fixed while making the difference in bold.
+
+Relevant pieces of previous conversation:
+{user_id}
+(You do not need to use these pieces of information if not relevant)
+
+Current conversation:
+Human: {input}
+AI:"""
+    if assessment:
+           DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
+   ,The Ai is a Contract Creation assitant designed to make Contracts.
+    The AI Should only make an overall risk assesment to the contract and give notes and advices.
+Relevant pieces of previous conversation:
+{user_id}
+(You do not need to use these pieces of information if not relevant)
+
+Current conversation:
+Human: {input}
+AI:"""
+    else:
+        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
-   The AI should usually reply with the contract only without any instructions or explainations.
+   The AI should act as a tool that outputs a contract , and only asks questions when needed too. 
    
 
 Relevant pieces of previous conversation:
@@ -154,6 +162,7 @@ Relevant pieces of previous conversation:
 Current conversation:
 Human: {input}
 AI:"""
+    
     formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
 
     PROMPT = PromptTemplate(
@@ -300,25 +309,6 @@ def saveId():
 
 
 
-# @app.route('/get_conversations/<google_id>', methods=["GET"])
-# def getConversations(google_id):
-#     try:
-#         # Fetch data from the "demo" table based on the provided Google ID
-#         query = supabase.from_("demo").select("conv_id, response").eq("googleid", google_id)
-#         response = query.execute()
-
-#         # Check if the response contains data
-#         if "data" in response:
-#             rows = response["data"]
-
-#             # Create a list of conversations (conv_id and Response)
-#             conversations = [{"conv_id": row["conv_id"], "response": row["response"]} for row in rows]
-
-#             return jsonify({"conversations": conversations})
-#         else:
-#             return jsonify({"conversations": []})  # No data found
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500  # HTTP 500 Internal Server Error for failure
 
 @app.route('/get_conversations/<google_id>', methods=["GET"])
 def getConversations(google_id):
@@ -359,13 +349,13 @@ def api():
 
    
     
-    response = handle_message(input_message, conv_id,internet=False)
+    response = handle_message(input_message, conv_id,internet=False,assesment=False,spell=False)
 
 
     return jsonify({'response': response})
 
-@app.route('/chat-internet', methods=['POST'])
-def apii():
+@app.route('/spell', methods=['POST'])
+def spell():
     data = request.get_json()
     # input_message is the actual data, the data mime type is specified in type
     input_message = data['prompt']
@@ -376,7 +366,41 @@ def apii():
 
    
     
-    response = handle_message(input_message, conv_id,internet=True)
+    response = handle_message(input_message, conv_id,internet=False,spell=True)
+
+
+    return jsonify({'response': response})
+
+@app.route('/assessment', methods=['POST'])
+def assessment():
+    data = request.get_json()
+    # input_message is the actual data, the data mime type is specified in type
+    input_message = data['prompt']
+
+ 
+    # ai_id is the id of the ai example GPT4 or GPT3.5 or LLAMA etc 
+    conv_id= data["conversationId"]
+
+   
+    
+    response = handle_message(input_message, conv_id,internet=False,assesment=True,spell=False)
+
+
+    return jsonify({'response': response})
+
+@app.route('/chat-internet', methods=['POST'])
+def internet():
+    data = request.get_json()
+    # input_message is the actual data, the data mime type is specified in type
+    input_message = data['prompt']
+
+ 
+    # ai_id is the id of the ai example GPT4 or GPT3.5 or LLAMA etc 
+    conv_id= data["conversationId"]
+
+   
+    
+    response = handle_message(input_message, conv_id,internet=True,assesment=False,spell=False)
 
 
     return jsonify({'response': response})
