@@ -2,11 +2,15 @@ from flask import Flask, request, jsonify
 from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
 from clarifai_grpc.grpc.api import service_pb2_grpc
 from langchaincoexpert.llms import Clarifai
+from langchaincoexpert.agents import load_tools
 
 # import csv
 import spacy
 from pprint import pprint
 from fpdf import FPDF
+from langchaincoexpert.agents import initialize_agent
+from langchaincoexpert.utilities import GoogleSearchAPIWrapper# import csv
+from langchaincoexpert.agents import AgentType
 
 from dropbox_sign import \
     ApiClient, ApiException, Configuration, apis, models
@@ -37,6 +41,12 @@ CLARIFAI_PAT = os.getenv("CLARIFAI_PAT")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+
+# os.environ['SERPER_API_KEY'] = "85a3148783d1539b6f59b5eca1968edd4d66f0d1"
+tools = load_tools(["google-serper"])
+
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -70,10 +80,59 @@ llm = Clarifai(pat=CLARIFAI_PAT, user_id='openai', app_id='chat-completion', mod
 
 
 # Handle incoming messages
-def handle_message(input_text , user_id):
+def handle_message(input_text , user_id,internet):
     memory_key = {user_id}
-    response = generate_response_llmchain(input_text, user_id)
+    if internet : 
+
+        response =  generate_Internet_response_llmchain(input_text, user_id)
+    else: 
+        response = generate_response_llmchain(input_text, user_id)
+
+    
     return response
+
+
+def generate_Internet_response_llmchain(prompt, conv_id):
+    convid = "a" + str(conv_id)
+    vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase,user_id=conv_id) # here we use normal userid "for saving memory"
+
+    retriever = vectordb.as_retriever(search_kwargs=dict(k=15,user_id=convid)) # here we use userid with "a" for retreiving memory
+    memory= VectorStoreRetrieverMemory(retriever=retriever , memory_key="chat_history")
+    DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI. The AI is Korean and talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question,
+    The AI is a question optimizer , it optimizes questions asked to be later searched in google to find better answers.
+Relevant pieces of previous conversation:
+{history}
+(You do not need to use these pieces of information if not relevant)
+
+Current conversation:
+Human: {input}
+AI:"""
+    # formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
+
+    # PROMPT = PromptTemplate(
+    # input_variables=["history", "input"], template=DEFAULT_TEMPLATE
+    # )
+
+    
+    # conversation_with_summary = ConversationChain(
+    #     llm=llm,
+    #     prompt=PROMPT,
+    #     memory=memory,
+    #     verbose=True
+    # )
+
+
+#     product_prompt = PromptTemplate(
+#     input_variables=["input"], 
+#     template=" You are a financial advisor and you should give me personalized response :  {input}"
+# )    
+ 
+  
+    agent = initialize_agent(tools, llm, agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION, verbose=True, memory = memory)
+    # agent.input_keys= 
+    final = agent.run(input = prompt)
+    return final
+
 
 def generate_response_llmchain(prompt, conv_id):
     convid = "a" + str(conv_id)
@@ -207,7 +266,7 @@ def drop():
 
             # Send a signature request
                 response = signature_request_api.signature_request_send(data)
-                print(response)
+                # print(response)
 
                 return 'Check your inbox on your email for signing', 200
 
@@ -271,7 +330,7 @@ def getConversations(google_id):
         # Check if the response contains data
         if response.data:
             rows = response.data
-            print(rows)
+            # print(rows)
             # Create a dictionary to store conv_id as keys and lists of responses as values
             conv_id_responses = {}
             for row in rows:
@@ -300,10 +359,28 @@ def api():
 
    
     
-    response = handle_message(input_message, conv_id)
+    response = handle_message(input_message, conv_id,internet=False)
 
 
     return jsonify({'response': response})
+
+@app.route('/chat-internet', methods=['POST'])
+def apii():
+    data = request.get_json()
+    # input_message is the actual data, the data mime type is specified in type
+    input_message = data['prompt']
+
+ 
+    # ai_id is the id of the ai example GPT4 or GPT3.5 or LLAMA etc 
+    conv_id= data["conversationId"]
+
+   
+    
+    response = handle_message(input_message, conv_id,internet=True)
+
+
+    return jsonify({'response': response})
+
 
 
 
