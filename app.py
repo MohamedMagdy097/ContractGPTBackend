@@ -82,8 +82,8 @@ def generate_response_llmchain(prompt, conv_id):
     retriever = vectordb.as_retriever(search_kwargs=dict(k=10,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
     DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is a Contract Creation assitant designed to make Solid Contracts.
-   The AI should reply with the contract only without any instructions or explainations Only the Contract. The Ai responds with a highlight with bold when user asks for risk assesment
+   ,The Ai is a Contract Creation assitant Called ContractGPT.
+   The AI should think and reply with only the contract without any messages or comments , it can only ask the user for more info about the contract to make it more coherent.
    
    
 
