@@ -42,9 +42,9 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+# SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 
-# os.environ['SERPER_API_KEY'] = "85a3148783d1539b6f59b5eca1968edd4d66f0d1"
+os.environ['SERPER_API_KEY'] = "85a3148783d1539b6f59b5eca1968edd4d66f0d1"
 tools = load_tools(["google-serper"])
 
 
