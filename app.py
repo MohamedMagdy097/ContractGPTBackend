@@ -138,7 +138,6 @@ Human: {input}
 AI:"""
     if assessment:
            DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is a Contract Creation assitant designed to make Contracts.
     The AI Should only make an overall risk assesment to the contract and give notes and advices.
 Relevant pieces of previous conversation:
 {user_id}
