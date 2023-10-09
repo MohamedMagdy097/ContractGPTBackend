@@ -102,7 +102,7 @@ def generate_Internet_response_llmchain(prompt, conv_id):
    ,The Ai is a Contract Creation assitant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
    The AI should usually reply with the contract only without any instructions or explainations.
-   The AI have real-time capabilities like it can use google to search for today's date or any related questions.
+   The AI have internet access to reply with if needed in case of date or time and real-time  questions are asked.
 {history}
 (You do not need to use these pieces of information if not relevant)
 
@@ -405,9 +405,12 @@ def internet():
     return jsonify({'response': response})
 
 
-@app.route('/delete-conv/<conversationId>', methods=['DELETE'])
-def deleteConversation(conversationId):
+@app.route('/delete-conv', methods=['DELETE'])
+def deleteConversation():
     # Check if conversationId is provided
+        
+    data = request.get_json()
+    conversationId = data['conversationId']
     if not conversationId:
         return jsonify({"message": "Invalid conversation ID provided"}, status_code=400)
 
@@ -419,22 +422,6 @@ def deleteConversation(conversationId):
     except Exception as e:
         return jsonify({"message": f"Error deleting conversation: {str(e)}"}, status_code=500)
 
-
-# @app.route('/delete-conv', methods=['DELETE'])
-# def deleteConversation():
-#     data = request.get_json()
-#     conversationId = data['conversationId']
-    
-#     # Check if conversationId is provided
-#     if not conversationId:
-#         return jsonify({"message": "Invalid conversation ID provided"}, status_code=400)
-
-#     try:
-#         # Delete all rows in the "demo" table with the specified conversation ID
-#         supabase.from_("demo").delete().eq("conversationId", conversationId).execute()
-#         return jsonify({"message": f"Deleted all rows with conversation ID: {conversationId}"})
-#     except Exception as e:
-#         return jsonify({"message": f"Error deleting conversation: {str(e)}"}, status_code=500)
 
 
 
