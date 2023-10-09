@@ -6,6 +6,7 @@ from langchaincoexpert.agents import load_tools
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+
 import re
 # import csv
 import spacy
@@ -122,6 +123,7 @@ AI:"""
 
 
 def generate_response_llmchain(prompt, conv_id,spell,assessment):
+
     convid = "a" + str(conv_id)
     # filter = {"user_id": userid}
     vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase,user_id=conv_id) # here we use normal userid "for saving memory"
