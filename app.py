@@ -101,7 +101,8 @@ def generate_Internet_response_llmchain(prompt, conv_id):
     DEFAULT_TEMPLATE = """he following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
-   The AI should usually reply with the contract only without any instructions or explainations.
+   The AI should act as a tool that only outputs a contract results without explainations or comments , and only asks questions when needed too , and always return the whole contract/agreement not parts of it.
+   
    
 {history}
 (You do not need to use these pieces of information if not relevant)
