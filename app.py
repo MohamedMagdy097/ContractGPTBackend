@@ -132,7 +132,7 @@ def generate_response_llmchain(prompt, conv_id,spell,assessment):
 Relevant pieces of previous conversation:
 {user_id}
 
-The Ai's Role is only to fix spelling and grammatical mistakes of the human's input.
+The Ai's Role is only to fix spelling and grammatical mistakes regardless of anything , it should return the same human input with spelling and grammer fixed.
 Current conversation:
 Human: {input}
 AI:"""
