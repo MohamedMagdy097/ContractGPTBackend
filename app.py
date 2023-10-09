@@ -65,7 +65,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="e88383d78903e3ee97788a3993bad96903e846c64052648059096b50b1017f15",
+    username="50a2b5f4e191f7663702de3b505ecc1943ffa61e2f7dc1da6dc66e4d664e09c3",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
