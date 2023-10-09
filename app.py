@@ -117,6 +117,7 @@ AI:"""
     return final
 
 
+
 def generate_response_llmchain(prompt, conv_id,spell,assessment):
     convid = "a" + str(conv_id)
     # filter = {"user_id": userid}
@@ -179,6 +180,7 @@ AI:"""
     # response = ans
     return ans
 
+
 def text_to_pdf(text):
     pdf = FPDF()
     pdf.add_page()
@@ -191,7 +193,7 @@ def text_to_pdf(text):
 @app.route('/delete', methods=['DELETE'])
 def deleteChat():
     data = request.get_json()
-    conversationId = "a" + data['convid']
+    conversationId = "a" + data['conversationId']
     
     # Check if conversationId is provided
     if not conversationId:
@@ -402,6 +404,38 @@ def internet():
 
 
     return jsonify({'response': response})
+
+
+@app.route('/delete-conv/<conversationId>', methods=['DELETE'])
+def deleteConversation(conversationId):
+    # Check if conversationId is provided
+    if not conversationId:
+        return jsonify({"message": "Invalid conversation ID provided"}, status_code=400)
+
+
+    try:
+        # Delete all rows in the "demo" table with the specified conversation ID
+        supabase.from_("demo").delete().eq("conv_id", conversationId).execute()
+        return jsonify({"message": f"Deleted all rows with conversation ID: {conversationId}"})
+    except Exception as e:
+        return jsonify({"message": f"Error deleting conversation: {str(e)}"}, status_code=500)
+
+
+# @app.route('/delete-conv', methods=['DELETE'])
+# def deleteConversation():
+#     data = request.get_json()
+#     conversationId = data['conversationId']
+    
+#     # Check if conversationId is provided
+#     if not conversationId:
+#         return jsonify({"message": "Invalid conversation ID provided"}, status_code=400)
+
+#     try:
+#         # Delete all rows in the "demo" table with the specified conversation ID
+#         supabase.from_("demo").delete().eq("conversationId", conversationId).execute()
+#         return jsonify({"message": f"Deleted all rows with conversation ID: {conversationId}"})
+#     except Exception as e:
+#         return jsonify({"message": f"Error deleting conversation: {str(e)}"}, status_code=500)
 
 
 
