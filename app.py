@@ -3,7 +3,10 @@ from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
 from clarifai_grpc.grpc.api import service_pb2_grpc
 from langchaincoexpert.llms import Clarifai
 from langchaincoexpert.agents import load_tools
-
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+import re
 # import csv
 import spacy
 from pprint import pprint
@@ -62,7 +65,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="afcd15c5bb48d8034a8b8c9cad85978200b25f173f4697adce2768faa13b91d9",
+    username="e88383d78903e3ee97788a3993bad96903e846c64052648059096b50b1017f15",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
@@ -161,7 +164,12 @@ Current conversation:
 Human: {input}
 AI:"""
     
-    formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
+    if spell:
+        formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+0+"}",input = "{input}")
+
+    else:
+
+     formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
 
     PROMPT = PromptTemplate(
         input_variables=[convid, "input"], template=formatted_template
@@ -180,6 +188,41 @@ AI:"""
     return ans
 
 
+
+def text_to_docx(text):
+    doc = Document()
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+    # Define a regular expression pattern to find **word** occurrences
+    pattern = r'\*\*(.*?)\*\*'
+
+    start = 0
+
+    for match in re.finditer(pattern, text):
+        end = match.start()
+        # Add text before the **word**
+        run = paragraph.add_run(text[start:end])
+
+        start, end = match.span()
+        # Add the bold and capitalized word
+        word = match.group(1).upper()  # Capitalize the word
+        run = paragraph.add_run(word)
+        run.bold = True
+        run.font.size = Pt(12)  # Set the font size
+        start = end
+
+    # Add any remaining text (after the last **word**)
+    run = paragraph.add_run(text[start:])
+
+    docx_file_path = "output.docx"
+    doc.save(docx_file_path)
+    return docx_file_path
+
+# input_text = "This is a **test** sentence. It should **work** fine."
+# output_file = text_to_docx(input_text)
+    
+# print(f"Word document generated at: {output_file}")
 # def text_to_pdf(text):
 #     pdf = FPDF()
 #     pdf.add_page()
@@ -188,53 +231,6 @@ AI:"""
 #     pdf_file_path = "output.pdf"
 #     pdf.output(pdf_file_path)
 #     return pdf_file_path
-# Define a custom class that inherits from FPDF
-# Define a custom class that inherits from FPDF
-class PDF(FPDF):
-    def set_bold(self):
-        self.set_font("Arial", "B", 12)
-
-    def unset_bold(self):
-        self.set_font("Arial", size=12)
-# Modify the text_to_pdf function
-def text_to_pdf(text):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    
-    # Split the text into words
-    words = text.split()
-    
-    # Initialize a flag to track if we're currently inside a bold section
-    inside_bold = False
-
-    for word in words:
-        if word.startswith("**"):
-            # If the word starts with '**', we're entering a bold section
-            inside_bold = True
-            # Remove the '**' markers
-            word = word[2:]
-            pdf.set_font("Arial", "B", size=12)
-        if word.endswith("**"):
-            # If the word ends with '**', we're leaving the bold section
-            inside_bold = False
-            # Remove the '**' markers
-            word = word[:-2]
-            pdf.set_font("Arial", size=12)
-        
-        if inside_bold:
-            # Inside a bold section, set the font to bold
-            pdf.set_font("Arial", "B", size=12)
-        else:
-            pdf.set_font("Arial", size=12)
-        
-        # Add the word to the PDF
-        pdf.multi_cell(0, 10, word, align="L")
-
-    pdf_file_path = "output.pdf"
-    pdf.output(pdf_file_path)
-    return pdf_file_path
-
 
 @app.route('/delete', methods=['DELETE'])
 def deleteChat():
@@ -266,7 +262,7 @@ def drop():
           # Parse JSON data from the request body
             request_data = request.get_json()
             text_data = request_data["chat"]
-            pdf_file_path = text_to_pdf(text_data)
+            pdf_file_path = text_to_docx(text_data)
 
             # Extract signer email addresses from the request data
             signer_1_email = request_data["signer_1_email"]
@@ -476,3 +472,4 @@ def deleteConversation():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 4000), debug=False)
+    
