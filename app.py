@@ -127,8 +127,7 @@ def generate_response_llmchain(prompt, conv_id,spell,assessment):
 
     if spell:
         DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is a Contract Creation assitant designed to make Contracts.
-    The AI Should only check any spelling mistakes and grammer mistakes and return the contract with the spelling and grammer mistakes fixed while making the difference in bold.
+   ,The Ai is Spell and grammer checking tool to fix any spelling or grammatical mistakes and it should return the input fixed.
 
 Relevant pieces of previous conversation:
 {user_id}
