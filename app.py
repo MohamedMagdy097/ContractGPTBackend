@@ -62,7 +62,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="ebffdc31428f6518c896b4e7ffe6faadd7c2b614c4271419c3a3cfcfb7369bac",
+    username="afcd15c5bb48d8034a8b8c9cad85978200b25f173f4697adce2768faa13b91d9",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
@@ -180,14 +180,47 @@ AI:"""
     return ans
 
 
+# def text_to_pdf(text):
+#     pdf = FPDF()
+#     pdf.add_page()
+#     pdf.set_font("Arial", size=12)
+#     pdf.multi_cell(190, 10, txt=text, align="L")
+#     pdf_file_path = "output.pdf"
+#     pdf.output(pdf_file_path)
+#     return pdf_file_path
+# Define a custom class that inherits from FPDF
+# Define a custom class that inherits from FPDF
+class PDF(FPDF):
+    def set_bold(self):
+        self.set_font("Arial", "B", 12)
+
+    def unset_bold(self):
+        self.set_font("Arial", size=12)
+
+# Modify the text_to_pdf function
 def text_to_pdf(text):
-    pdf = FPDF()
+    pdf = PDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    pdf.multi_cell(190, 10, txt=text, align="L")
+
+    lines = text.split("\n")
+    for line in lines:
+        words = line.split(" ")
+        for word in words:
+            if word.startswith("**") and word.endswith("**"):
+                # Remove the '**' markers and set the font to bold
+                pdf.set_bold()
+                pdf.cell(0, 10, word[2:-2], ln=True)
+                pdf.unset_bold()
+            else:
+                pdf.cell(0, 10, word, ln=True)
+
     pdf_file_path = "output.pdf"
     pdf.output(pdf_file_path)
     return pdf_file_path
+
+
+
 
 @app.route('/delete', methods=['DELETE'])
 def deleteChat():
