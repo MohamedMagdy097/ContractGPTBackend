@@ -65,7 +65,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="50a2b5f4e191f7663702de3b505ecc1943ffa61e2f7dc1da6dc66e4d664e09c3",
+    username="e88383d78903e3ee97788a3993bad96903e846c64052648059096b50b1017f15",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
@@ -128,20 +128,18 @@ def generate_response_llmchain(prompt, conv_id,spell,assessment):
 
     retriever = vectordb.as_retriever(search_kwargs=dict(k=10,user_id=convid)) # here we use userid with "a" for retreiving memory
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
-
     if spell:
-        DEFAULT_TEMPLATE = """
-   
+     DEFAULT_TEMPLATE = """
 Relevant pieces of previous conversation:
 {user_id}
 
-The Ai's Role is only to fix spelling and grammatical mistakes regardless of anything , it should return the same human input with spelling and grammer fixed.
+The Ai's Role is only to fix spelling and grammatical mistakes regardless of anything , it should return the same human input with spelling and grammar fixed.
 Current conversation:
 Human: {input}
 AI:"""
-    if assessment:
-           DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-    The AI Should only make an overall risk assesment to the contract and give notes and advices.
+    elif assessment:
+        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
+    The AI Should only make an overall risk assessment to the contract and give notes and advices.
 Relevant pieces of previous conversation:
 {user_id}
 (You do not need to use these pieces of information if not relevant)
@@ -151,11 +149,10 @@ Human: {input}
 AI:"""
     else:
         DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is a Contract Creation assitant designed to make Contracts.
+   ,The Ai is a Contract Creation assistant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
-   The AI should act as a tool that only outputs a contract results without explainations or comments , and only asks questions when needed too , and always return the whole contract/agreement not parts of it.
+   The AI should act as a tool that only outputs a contract results without explanations or comments, and only asks questions when needed too, and always return the whole contract/agreement not parts of it.
    
-
 Relevant pieces of previous conversation:
 {user_id}
 (You do not need to use these pieces of information if not relevant)
@@ -164,13 +161,10 @@ Current conversation:
 Human: {input}
 AI:"""
     
-    if spell:
-        formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+0+"}",input = "{input}")
-
-    else:
-
-     formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
-
+    
+ 
+    formatted_template = DEFAULT_TEMPLATE.format(user_id="{"+convid+"}",input = "{input}")
+ 
     PROMPT = PromptTemplate(
         input_variables=[convid, "input"], template=formatted_template
     )
