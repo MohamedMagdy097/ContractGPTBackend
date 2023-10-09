@@ -126,9 +126,9 @@ def generate_response_llmchain(prompt, conv_id,spell,assessment):
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
 
     if spell:
-        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
-   ,The Ai is Spell and grammer checking tool to fix any spelling or grammatical mistakes and it should return the input fixed.
-
+        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI.
+   ,The Ai's Role is only to fix spelling and grammatical mistakes of the human's input.
+   
 Relevant pieces of previous conversation:
 {user_id}
 (You do not need to use these pieces of information if not relevant)
