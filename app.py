@@ -62,7 +62,7 @@ MODEL_ID = 'GPT-3_5-turbo'
 #Drop Box Config
 configuration = Configuration(
     # Configure HTTP basic authorization: api_key
-    username="c166dc395714e4de92d8aff960507f383ec8a55a9459163fd6d3e9d52b2e2338",
+    username="afcd15c5bb48d8034a8b8c9cad85978200b25f173f4697adce2768faa13b91d9",
 
     # or, configure Bearer (JWT) authorization: oauth2
     # access_token="YOUR_ACCESS_TOKEN",
@@ -196,30 +196,44 @@ class PDF(FPDF):
 
     def unset_bold(self):
         self.set_font("Arial", size=12)
-
 # Modify the text_to_pdf function
 def text_to_pdf(text):
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
+    
+    # Split the text into words
+    words = text.split()
+    
+    # Initialize a flag to track if we're currently inside a bold section
+    inside_bold = False
 
-    lines = text.split("\n")
-    for line in lines:
-        words = line.split(" ")
-        for word in words:
-            if word.startswith("**") and word.endswith("**"):
-                # Remove the '**' markers and set the font to bold
-                pdf.set_bold()
-                pdf.cell(0, 10, word[2:-2], ln=True)
-                pdf.unset_bold()
-            else:
-                pdf.cell(0, 10, word, ln=True)
+    for word in words:
+        if word.startswith("**"):
+            # If the word starts with '**', we're entering a bold section
+            inside_bold = True
+            # Remove the '**' markers
+            word = word[2:]
+            pdf.set_font("Arial", "B", size=12)
+        if word.endswith("**"):
+            # If the word ends with '**', we're leaving the bold section
+            inside_bold = False
+            # Remove the '**' markers
+            word = word[:-2]
+            pdf.set_font("Arial", size=12)
+        
+        if inside_bold:
+            # Inside a bold section, set the font to bold
+            pdf.set_font("Arial", "B", size=12)
+        else:
+            pdf.set_font("Arial", size=12)
+        
+        # Add the word to the PDF
+        pdf.multi_cell(0, 10, word, align="L")
 
     pdf_file_path = "output.pdf"
     pdf.output(pdf_file_path)
     return pdf_file_path
-
-
 
 
 @app.route('/delete', methods=['DELETE'])
