@@ -127,13 +127,12 @@ def generate_response_llmchain(prompt, conv_id,spell,assessment):
     memory = VectorStoreRetrieverMemory(retriever=retriever, memory_key=convid)
 
     if spell:
-        DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI.
-   ,The Ai's Role is only to fix spelling and grammatical mistakes of the human's input.
+        DEFAULT_TEMPLATE = """
    
 Relevant pieces of previous conversation:
 {user_id}
-(You do not need to use these pieces of information if not relevant)
 
+The Ai's Role is only to fix spelling and grammatical mistakes of the human's input.
 Current conversation:
 Human: {input}
 AI:"""
@@ -151,7 +150,7 @@ AI:"""
         DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
-   The AI should act as a tool that outputs a contract , and only asks questions when needed too. 
+   The AI should act as a tool that only outputs a contract results without explainations or comments , and only asks questions when needed too. 
    
 
 Relevant pieces of previous conversation:
