@@ -13,3 +13,4 @@ dropbox_sign
 python-docx
 PyPDF2
 PyMuPDF
+docx2txt
