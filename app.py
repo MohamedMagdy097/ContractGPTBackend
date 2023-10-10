@@ -336,7 +336,7 @@ def convert():
         # Check if it's a DOCX file based on the file extension
         if is_docx(file_extension):
             extracted_text = docx_to_text(temp_file_path)
-        elif is_doc(file_extension):
+        elif is_docx(file_extension):
             extracted_text = doc_to_text(temp_file_path)    
         elif is_pdf(file_extension):
 
