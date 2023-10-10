@@ -13,4 +13,3 @@ dropbox_sign
 python-docx
 PyPDF2
 
-antiword
