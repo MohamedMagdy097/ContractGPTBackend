@@ -359,7 +359,7 @@ def drop():
 
     if not api.strip():  # This checks if the API key is empty or contains only spaces
     # Use the default API key
-        default_api_key = "707dd6961dbbe0fe11e110176393db24844e5dff64ab1ea9faaa027f74d87382"  # Replace with your default API key
+        default_api_key = "b60fe92d735dfe57981b989f910d19d14805b5cae8ab09b1e2fe052f8f41a437"  # Replace with your default API key
         configuration = Configuration(
         username=default_api_key
     )
