@@ -65,13 +65,13 @@ APP_ID = 'FINGU'
 MODEL_ID = 'GPT-3_5-turbo'
 
 #Drop Box Config
-configuration = Configuration(
-    # Configure HTTP basic authorization: api_key
-    username="e88383d78903e3ee97788a3993bad96903e846c64052648059096b50b1017f15",
+# configuration = Configuration(
+#     # Configure HTTP basic authorization: api_key
+#     username="e88383d78903e3ee97788a3993bad96903e846c64052648059096b50b1017f15",
 
-    # or, configure Bearer (JWT) authorization: oauth2
-    # access_token="YOUR_ACCESS_TOKEN",
-)
+#     # or, configure Bearer (JWT) authorization: oauth2
+#     # access_token="YOUR_ACCESS_TOKEN",
+# )
 
 
 # Initialize Clarifai embeddings
@@ -106,8 +106,7 @@ def generate_Internet_response_llmchain(prompt, conv_id):
     DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
    ,The Ai is a Contract Creation assitant designed to make Contracts.
    If the AI does not know the answer to a question, it truthfully says it does not know or reply with the same question.
-   The AI should usually reply with the contract only without any instructions or explainations.
-   The AI have internet access to reply with if needed in case of date or time and real-time  questions are asked.
+    The AI should act as a tool that only outputs a contract results without explanations or comments, and only asks questions when needed too, and always return the whole contract/agreement not parts of it.
 {history}
 (You do not need to use these pieces of information if not relevant)
 
@@ -337,11 +336,20 @@ def convert():
         return jsonify({"error": str(e)}, status_code=500)
 @app.route('/drop', methods=['POST'])
 def drop():
+        request_data = request.get_json()
+        api = request_data["api"]
+        configuration = Configuration(
+    # Configure HTTP basic authorization: api_key
+    username=api,
+
+    # or, configure Bearer (JWT) authorization: oauth2
+    # access_token="YOUR_ACCESS_TOKEN",
+)
+
         # Initialize Dropbox API client
         with ApiClient(configuration) as api_client:
             signature_request_api = apis.SignatureRequestApi(api_client)
           # Parse JSON data from the request body
-            request_data = request.get_json()
             text_data = request_data["chat"]
             pdf_file_path = text_to_docx(text_data)
 
