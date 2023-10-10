@@ -12,4 +12,4 @@ flask_cors
 dropbox_sign
 python-docx
 PyPDF2
-
+PyMuPDF
