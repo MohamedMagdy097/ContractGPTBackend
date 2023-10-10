@@ -6,6 +6,7 @@ from langchaincoexpert.agents import load_tools
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+import PyPDF2
 
 import re
 # import csv
@@ -139,6 +140,7 @@ The Ai's Role is only to fix spelling and grammatical mistakes regardless of any
 Current conversation:
 Human: {input}
 AI:"""
+
     elif assessment:
         DEFAULT_TEMPLATE = """The following is a friendly conversation between a human and an AI called ContractGPT. 
     The AI Should only make an overall risk assessment to the contract and give notes and advices.
@@ -185,6 +187,17 @@ AI:"""
 
 
 
+def pdf_to_text(pdf_file_path):
+    text = ""
+
+    with open(pdf_file_path, 'rb') as pdf_file:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)  # Use PdfReader instead of PdfFileReader
+
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+
+    return text
+
 def text_to_docx(text):
     doc = Document()
     paragraph = doc.add_paragraph()
@@ -214,6 +227,16 @@ def text_to_docx(text):
     docx_file_path = "output.docx"
     doc.save(docx_file_path)
     return docx_file_path
+
+
+def docx_to_text(docx_file_path):
+    doc = Document(docx_file_path)
+    text = ""
+
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + "\n"
+
+    return text
 
 # input_text = "This is a **test** sentence. It should **work** fine."
 # output_file = text_to_docx(input_text)
@@ -250,6 +273,68 @@ def deleteChat():
 
 
 
+# @app.route('/convert', methods=['POST'])
+# def convert():
+#     try:
+#         # Get the uploaded file from the request
+#         uploaded_file = request.files['file']
+
+#         # Check if a file was provided in the request
+#         if not uploaded_file:
+#             return jsonify({"error": "No file provided in the request"}, status_code=400)
+
+#         # Save the uploaded DOCX file temporarily
+#         temp_docx_path = "temp.docx"
+#         uploaded_file.save(temp_docx_path)
+
+#         # Use the docx_to_text function to extract text from the DOCX file
+#         extracted_text = docx_to_text(temp_docx_path)
+
+#         # Remove the temporary file
+#         os.remove(temp_docx_path)
+
+#         return jsonify({"text": extracted_text})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}, status_code=500)
+def is_docx(filename):
+    return filename.lower().endswith('.docx')
+def is_pdf(file_extension):
+    return file_extension.lower() == '.pdf'
+
+@app.route('/convert', methods=['POST'])
+def convert():
+    try:
+        # Get the uploaded file from the request
+        uploaded_file = request.files['file']
+
+        # Check if a file was provided in the request
+        if not uploaded_file:
+            return jsonify({"error": "No file provided in the request"}, status_code=400)
+
+        # Get the filename and file extension
+        filename, file_extension = os.path.splitext(uploaded_file.filename)
+
+        # Save the uploaded file temporarily
+        temp_file_path = "temp_file" + file_extension
+        uploaded_file.save(temp_file_path)
+
+        # Check if it's a DOCX file based on the file extension
+        if is_docx(file_extension):
+            extracted_text = docx_to_text(temp_file_path)
+        elif is_pdf(file_extension):
+
+            # Assume it's a PDF file based on the file extension
+            extracted_text = pdf_to_text(temp_file_path)
+        else :
+
+             return jsonify({"error": str(e)}, status_code=500)
+
+        # Remove the temporary file
+        os.remove(temp_file_path)
+
+        return jsonify({"text": extracted_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}, status_code=500)
 @app.route('/drop', methods=['POST'])
 def drop():
         # Initialize Dropbox API client
