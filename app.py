@@ -15,6 +15,7 @@ from fpdf import FPDF
 from langchaincoexpert.agents import initialize_agent
 from langchaincoexpert.utilities import GoogleSearchAPIWrapper# import csv
 from langchaincoexpert.agents import AgentType
+import fitz
 
 from dropbox_sign import \
     ApiClient, ApiException, Configuration, apis, models
@@ -192,13 +193,13 @@ def doc_to_text(doc_file_path):
         if not os.path.exists(doc_file_path):
             return "File not found."
 
-        # Use the 'antiword' command to extract text from the .doc file
-        result = subprocess.run(["antiword", doc_file_path], capture_output=True, text=True)
+        # Use PyMuPDF to extract text from the .doc file
+        text = ""
+        with fitz.open(doc_file_path) as doc:
+            for page in doc:
+                text += page.get_text()
 
-        if result.returncode == 0:
-            return result.stdout
-        else:
-            return "Error extracting text from .doc file."
+        return text
     except Exception as e:
         return str(e)
         
