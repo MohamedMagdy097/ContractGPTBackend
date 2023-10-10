@@ -11,3 +11,4 @@ fpdf2
 flask_cors
 dropbox_sign
 python-docx
+PyPDF2
