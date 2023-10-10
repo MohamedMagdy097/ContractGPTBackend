@@ -13,3 +13,4 @@ dropbox_sign
 python-docx
 PyPDF2
 
+win32com.client
