@@ -336,15 +336,20 @@ def convert():
         return jsonify({"error": str(e)}, status_code=500)
 @app.route('/drop', methods=['POST'])
 def drop():
-        request_data = request.get_json()
-        api = request_data["api"]
-        configuration = Configuration(
-    # Configure HTTP basic authorization: api_key
-    username=api,
+    request_data = request.get_json()
 
-    # or, configure Bearer (JWT) authorization: oauth2
-    # access_token="YOUR_ACCESS_TOKEN",
-)
+    api = request_data["api"]
+
+    if not api.strip():  # This checks if the API key is empty or contains only spaces
+    # Use the default API key
+        default_api_key = "707dd6961dbbe0fe11e110176393db24844e5dff64ab1ea9faaa027f74d87382"  # Replace with your default API key
+        configuration = Configuration(
+        username=default_api_key
+    )
+    else:
+        configuration = Configuration(
+        username=api
+    )
 
         # Initialize Dropbox API client
         with ApiClient(configuration) as api_client:
