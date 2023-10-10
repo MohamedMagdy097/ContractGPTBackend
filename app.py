@@ -7,7 +7,7 @@ from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import PyPDF2
-
+import win32com.client
 import re
 # import csv
 import spacy
@@ -186,6 +186,31 @@ AI:"""
 
 
 
+def doc_to_text(doc_file_path):
+    try:
+        # Check if the file exists
+        if not os.path.exists(doc_file_path):
+            return "File not found."
+
+        # Create a new Word application
+        word = win32com.client.Dispatch("Word.Application")
+
+        # Open the document
+        doc = word.Documents.Open(doc_file_path)
+
+        # Read the text from the document
+        text = doc.Content.Text
+
+        # Close the document
+        doc.Close()
+
+        # Quit the Word application
+        word.Quit()
+
+        return text
+    except Exception as e:
+        return str(e)
+        
 def pdf_to_text(pdf_file_path):
     text = ""
 
@@ -320,6 +345,8 @@ def convert():
         # Check if it's a DOCX file based on the file extension
         if is_docx(file_extension):
             extracted_text = docx_to_text(temp_file_path)
+        elif is_doc(file_extension):
+            extracted_text = doc_to_text(temp_file_path)    
         elif is_pdf(file_extension):
 
             # Assume it's a PDF file based on the file extension
