@@ -10,7 +10,7 @@ import PyPDF2
 import re
 # import csv
 import spacy
-import comtypes.client
+import docx2txt
 from pprint import pprint
 from fpdf import FPDF
 from langchaincoexpert.agents import initialize_agent
@@ -188,12 +188,12 @@ AI:"""
 
 
 
+
+
 def doc_to_text(doc_file_path):
-    word = comtypes.client.CreateObject("Word.Application")
-    doc = word.Documents.Open(doc_file_path)
-    text = doc.Content.Text
-    doc.Close()
-    word.Quit()
+    # Extract text from the .doc file
+    text = docx2txt.process(doc_file_path)
+    
     return text
 
 def pdf_to_text(pdf_file_path):
@@ -310,50 +310,13 @@ def is_docx(filename):
 def is_pdf(file_extension):
     return file_extension.lower() == '.pdf'
 
-# @app.route('/convert', methods=['POST'])
-# def convert():
-#     try:
-#         # Get the uploaded file from the request
-#         uploaded_file = request.files['file']
-
-#         # Check if a file was provided in the request
-#         if not uploaded_file:
-#             return jsonify({"error": "No file provided in the request"}, status_code=400)
-
-#         # Get the filename and file extension
-#         filename, file_extension = os.path.splitext(uploaded_file.filename)
-
-#         # Save the uploaded file temporarily
-#         temp_file_path = "temp_file" + file_extension
-#         uploaded_file.save(temp_file_path)
-
-#         # Check if it's a DOCX file based on the file extension
-#         if is_docx(file_extension):
-#             extracted_text = docx_to_text(temp_file_path)
-#         elif is_docx(file_extension):
-#             extracted_text = doc_to_text(temp_file_path)    
-#         elif is_pdf(file_extension):
-
-#             # Assume it's a PDF file based on the file extension
-#             extracted_text = pdf_to_text(temp_file_path)
-#         else :
-
-#              return jsonify({"error": str(e)}, status_code=500)
-
-#         # Remove the temporary file
-#         os.remove(temp_file_path)
-
-#         return jsonify({"text": extracted_text})
-#     except Exception as e:
-#         return jsonify({"error": str(e)}, status_code=500)
-
-
-
 @app.route('/convert', methods=['POST'])
 def convert():
     try:
+        # Get the uploaded file from the request
         uploaded_file = request.files['file']
 
+        # Check if a file was provided in the request
         if not uploaded_file:
             return jsonify({"error": "No file provided in the request"}, status_code=400)
 
@@ -364,31 +327,28 @@ def convert():
         temp_file_path = "temp_file" + file_extension
         uploaded_file.save(temp_file_path)
 
-        if file_extension.lower() == '.docx':
+        # Check if it's a DOCX file based on the file extension
+        if is_docx(file_extension):
             extracted_text = docx_to_text(temp_file_path)
-        elif file_extension.lower() == '.doc':
-            # Convert the .doc file to .docx using pywin32
-            converted_docx_path = "temp_file.docx"
-            comtypes.client.gen_dir = None
-            docx_format = comtypes.client.CreateObject("Word.Application")
-            docx_format.Visible = False
-            docx_format.DisplayAlerts = False
-            docx_document = docx_format.Documents.Open(temp_file_path)
-            docx_document.SaveAs(converted_docx_path, 16)
-            docx_document.Close()
-            docx_format.Quit()
-            extracted_text = docx_to_text(converted_docx_path)
-        elif file_extension.lower() == '.pdf':
-            extracted_text = pdf_to_text(temp_file_path)
-        else:
-            return jsonify({"error": "Unsupported file format"}, status_code=400)
+        elif is_docx(file_extension):
+            extracted_text = doc_to_text(temp_file_path)    
+        elif is_pdf(file_extension):
 
+            # Assume it's a PDF file based on the file extension
+            extracted_text = pdf_to_text(temp_file_path)
+        else :
+
+             return jsonify({"error": str(e)}, status_code=500)
+
+        # Remove the temporary file
         os.remove(temp_file_path)
 
         return jsonify({"text": extracted_text})
-
     except Exception as e:
         return jsonify({"error": str(e)}, status_code=500)
+
+
+
 @app.route('/drop', methods=['POST'])
 def drop():
     request_data = request.get_json()
