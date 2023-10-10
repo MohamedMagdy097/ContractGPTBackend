@@ -7,7 +7,6 @@ from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import PyPDF2
-import win32com.client
 import re
 # import csv
 import spacy
@@ -19,6 +18,7 @@ from langchaincoexpert.agents import AgentType
 
 from dropbox_sign import \
     ApiClient, ApiException, Configuration, apis, models
+import subprocess
 
 from langchaincoexpert.memory import VectorStoreRetrieverMemory
 from langchaincoexpert.chains import ConversationChain
@@ -192,22 +192,13 @@ def doc_to_text(doc_file_path):
         if not os.path.exists(doc_file_path):
             return "File not found."
 
-        # Create a new Word application
-        word = win32com.client.Dispatch("Word.Application")
+        # Use the 'antiword' command to extract text from the .doc file
+        result = subprocess.run(["antiword", doc_file_path], capture_output=True, text=True)
 
-        # Open the document
-        doc = word.Documents.Open(doc_file_path)
-
-        # Read the text from the document
-        text = doc.Content.Text
-
-        # Close the document
-        doc.Close()
-
-        # Quit the Word application
-        word.Quit()
-
-        return text
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            return "Error extracting text from .doc file."
     except Exception as e:
         return str(e)
         
