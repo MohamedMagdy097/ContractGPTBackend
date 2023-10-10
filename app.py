@@ -296,7 +296,7 @@ def deleteChat():
 #     except Exception as e:
 #         return jsonify({"error": str(e)}, status_code=500)
 def is_docx(filename):
-    return filename.lower().endswith('.docx')
+    return filename.lower().endswith('.docx') or filename.lower().endswith('.doc')
 def is_pdf(file_extension):
     return file_extension.lower() == '.pdf'
 
