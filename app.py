@@ -83,7 +83,7 @@ embeddings = ClarifaiEmbeddings(pat=CLARIFAI_PAT, user_id="openai", app_id="embe
 # vectordb = SupabaseVectorStore.from_documents({}, embeddings, client=supabase)
 
 # Initialize Clarifai LLM
-llm = Clarifai(pat=CLARIFAI_PAT, user_id='openai', app_id='chat-completion', model_id='GPT-4')
+llm = Clarifai(pat=CLARIFAI_PAT, user_id='meta', app_id='Llama-2', model_id='llama2-7b-chat')
 
 
 # Handle incoming messages
