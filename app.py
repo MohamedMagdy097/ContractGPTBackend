@@ -465,7 +465,7 @@ def saveId():
 
 @app.route('/get_conversations/<google_id>', methods=["GET"])
 def getConversations(google_id):
-    print(request.remote_addr)
+    print(request.url)
     try:
         # Fetch data from the "demo" table based on the provided Google ID
         query = supabase.from_("demo").select("conv_id, response").eq("googleid", google_id)
